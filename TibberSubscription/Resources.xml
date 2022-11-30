@@ -1,0 +1,47 @@
+﻿<resources>
+	<!--Auto reconnect when subscription is lost?(yes or no)-->
+	<reconnect>yes</reconnect>
+	<!--Set custom product header and version, f.ex "MyHome" and "1.1"-->
+	<productheader></productheader>
+	<productversion></productversion>
+	<!--Edit ApiKey and HomeID to yours-->
+	<apikey></apikey>
+	<homeid></homeid>
+	<!--MQTT Broker details-->
+	<brokeraddress></brokeraddress>
+	<brokerport></brokerport>
+	<!--MQTT Topic update speed, number indicate how many Tibber broadcasts before publish to MQTT-->
+	<delay>3</delay>
+	<!--Set MQTT base topic here-->
+	<basetopic>TibberLive</basetopic>
+	<topics>
+		<!--Set enabled to true to send to MQTT topic, false to not-->
+		<Topic name="Timestamp" enabled="false"/>
+		<Topic name="Power" enabled="true"/>
+		<Topic name="LastMeterConsumption" enabled="false"/>
+		<Topic name="AccumulatedConsumption" enabled="true"/>
+		<Topic name="AccumulatedConsumptionLastHour" enabled="true"/>
+		<Topic name="AccumulatedProduction" enabled="false"/>
+		<Topic name="AccumulatedProductionLastHour" enabled="false"/>
+		<Topic name="AccumulatedCost" enabled="true"/>
+		<Topic name="AccumulatedReward" enabled="false"/>
+		<Topic name="Currency" enabled="false"/>
+		<Topic name="MinPower" enabled="false"/>
+		<Topic name="AveragePower" enabled="true"/>
+		<Topic name="MaxPower" enabled="false"/>
+		<Topic name="PowerProduction" enabled="false"/>
+		<Topic name="PowerReactive" enabled="false"/>
+		<Topic name="PowerProductionReactive" enabled="false"/>
+		<Topic name="MinPowerProduction" enabled="false"/>
+		<Topic name="MaxPowerProduction" enabled="false"/>
+		<Topic name="LastMeterProduction" enabled="false"/>
+		<Topic name="VoltagePhase1" enabled="true"/>
+		<Topic name="VoltagePhase2" enabled="false"/>
+		<Topic name="VoltagePhase3" enabled="false"/>
+		<Topic name="CurrentPhase1" enabled="true"/>
+		<Topic name="CurrentPhase2" enabled="false"/>
+		<Topic name="CurrentPhase3" enabled="false"/>
+		<Topic name="PowerFactor" enabled="false"/>
+		<Topic name="SignalStrength" enabled="true"/>
+	</topics>
+</resources>
