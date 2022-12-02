@@ -16,6 +16,7 @@ namespace TibberSubscription
     {
         public static int resets = 0;
         public static TibberResource tibberRes;
+        public static Logger logger = new Logger();
         static void Main()
         {
             try
@@ -26,6 +27,7 @@ namespace TibberSubscription
             }
             catch(Exception ex)
             {
+                MainProgram.logger.LogEntry($"Main exception thrown:{ex.Message}", "CRITICAL");
                 Console.WriteLine(ex.Message);
                 Console.WriteLine("Press enter to exit...");
                 Console.ReadLine();
@@ -49,6 +51,7 @@ namespace TibberSubscription
                     throw new Exception("Error in Resource.xml, please check file");
 
                 Console.WriteLine("Initializing...");
+                logger.LogEntry("Connecting to Tibber", "STARTUP");
                 // Setup needed variables for tibber api subscription, get details from Resources.xml
                 var userAgent = new ProductInfoHeaderValue(tibberRes.productheader, tibberRes.productversion);
                 var client = new TibberApiClient(tibberRes.apikey, userAgent);
@@ -78,9 +81,11 @@ namespace TibberSubscription
         {
             // Current live subscription will end.
             Console.WriteLine("Real time measurement stream has been terminated.\n");
+            MainProgram.logger.LogEntry("Real time measurement stream has been terminated", "STOPPED");
             // Start new subscription.
-            if(MainProgram.tibberRes.reconnect == "yes")
+            if (MainProgram.tibberRes.reconnect == "yes")
             {
+                MainProgram.logger.LogEntry("Trying to reconnect", "RECONNECTING");
                 Task.Run(() => MainProgram.Subscript());
                 return;
             }
@@ -90,6 +95,7 @@ namespace TibberSubscription
         {
             // If tibber subscription is lost, add 1 to resets and goto "OnComplete"
             Console.WriteLine($"An error occurred: {error}\n");
+            MainProgram.logger.LogEntry($"An error occurred: {error}", "ERROR");
             MainProgram.resets++;
         }
         public void OnNext(RealTimeMeasurement value)
@@ -200,6 +206,7 @@ namespace TibberSubscription
                     Console.WriteLine("No topics configured, missing MQTT broker details or error in XML. Please check Resource.xml");
                     Console.WriteLine("Subscription ended.");
                     Console.WriteLine("Press any key to exit");
+                    MainProgram.logger.LogEntry("No Topics or MQTT Broker address", "TOPICS");
                     // End thread
                     throw new TaskCanceledException();
                 }
