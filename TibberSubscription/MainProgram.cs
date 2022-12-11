@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Tibber.Sdk;
 
@@ -22,16 +23,24 @@ namespace TibberSubscription
             try
             {
                 tibberRes = ReadXml.ReadXML();
-                Task.Run(() => Subscript());
+                RunTask();
                 Console.ReadLine();
             }
             catch(Exception ex)
             {
-                MainProgram.logger.LogEntry($"Main exception thrown:{ex.Message}", "CRITICAL");
+                logger.LogEntry($"Main exception thrown:{ex.Message}", "CRITICAL");
                 Console.WriteLine(ex.Message);
                 Console.WriteLine("Press enter to exit...");
                 Console.ReadLine();
             }
+        }
+
+        public static void RunTask()
+        {
+            Task.Run(() =>
+            {
+                Console.WriteLine("Running");
+            }).ContinueWith(t => Subscript());
         }
 
         /// <summary>
@@ -47,7 +56,7 @@ namespace TibberSubscription
                     tibberRes.productversion == null ||
                     tibberRes.apikey == null ||
                     tibberRes.homeid == null ||
-                    tibberRes.basetopic == null )
+                    tibberRes.basetopic == null)
                     throw new Exception("Error in Resource.xml, please check file");
 
                 Console.WriteLine("Initializing...");
@@ -59,9 +68,9 @@ namespace TibberSubscription
                 var listener = await client.StartRealTimeMeasurementListener(homeId);
                 listener.Subscribe(new RealTimeMeasurementObserver());
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                logger.LogEntry(ex.Message, "CONNERR");
             }
         }
     }
@@ -77,6 +86,7 @@ namespace TibberSubscription
         // Set base MQTT topic to use
         string mainTopic = MainProgram.tibberRes.basetopic;
         List<string[]> topicList = new List<string[]>();
+        
         public void OnCompleted()
         {
             // Current live subscription will end.
@@ -85,8 +95,11 @@ namespace TibberSubscription
             // Start new subscription.
             if (MainProgram.tibberRes.reconnect == "yes")
             {
+                Console.WriteLine("Sleeping for 60 sec");
+                Thread.Sleep(60 * 1000);
                 MainProgram.logger.LogEntry("Trying to reconnect", "RECONNECTING");
-                Task.Run(() => MainProgram.Subscript());
+                Task.Run(() => MainProgram.RunTask());
+                //Task.Run(() => MainProgram.Subscript());
                 return;
             }
             Console.WriteLine("Auto reconnect is off, change in Resources.xml\nPress any key to exit.");
