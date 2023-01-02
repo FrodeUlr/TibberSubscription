@@ -17,22 +17,22 @@ namespace TibberSubscription
     {
         public static int resets = 0;
         public static TibberResource tibberRes;
-        public static Logger logger = new Logger();
+        public static Logger logger;
         static void Main()
         {
+            logger = new Logger();
             try
             {
                 tibberRes = ReadXml.ReadXML();
                 RunTask();
-                Console.ReadLine();
             }
             catch(Exception ex)
             {
                 logger.LogEntry($"Main exception thrown:{ex.Message}", "CRITICAL");
                 Console.WriteLine(ex.Message);
                 Console.WriteLine("Press enter to exit...");
-                Console.ReadLine();
             }
+            Console.ReadLine();
         }
 
         public static void RunTask()
@@ -49,28 +49,37 @@ namespace TibberSubscription
         /// <returns></returns>
         public static async Task Subscript()
         {
-            try
+            bool loop = true;
+            while (loop)
             {
-                if (
-                    tibberRes.productheader == null ||
-                    tibberRes.productversion == null ||
-                    tibberRes.apikey == null ||
-                    tibberRes.homeid == null ||
-                    tibberRes.basetopic == null)
-                    throw new Exception("Error in Resource.xml, please check file");
+                try
+                {
+                    if (tibberRes.productheader == null ||
+                        tibberRes.productversion == null ||
+                        tibberRes.apikey == null ||
+                        tibberRes.homeid == null ||
+                        tibberRes.basetopic == null)
+                        throw new Exception("Error in Resource.xml, please check file");
 
-                Console.WriteLine("Initializing...");
-                logger.LogEntry("Connecting to Tibber", "STARTUP");
-                // Setup needed variables for tibber api subscription, get details from Resources.xml
-                var userAgent = new ProductInfoHeaderValue(tibberRes.productheader, tibberRes.productversion);
-                var client = new TibberApiClient(tibberRes.apikey, userAgent);
-                var homeId = Guid.Parse(tibberRes.homeid);
-                var listener = await client.StartRealTimeMeasurementListener(homeId);
-                listener.Subscribe(new RealTimeMeasurementObserver());
-            }
-            catch (Exception ex)
-            {
-                logger.LogEntry(ex.Message, "CONNERR");
+                    Console.WriteLine("Initializing...");
+                    logger.LogEntry("Connecting to Tibber", "STARTUP");
+                    // Setup needed variables for tibber api subscription, get details from Resources.xml
+                    var userAgent = new ProductInfoHeaderValue(tibberRes.productheader, tibberRes.productversion);
+                    var client = new TibberApiClient(tibberRes.apikey, userAgent);
+                    var homeId = Guid.Parse(tibberRes.homeid);
+                    var listener = await client.StartRealTimeMeasurementListener(homeId);
+                    listener.Subscribe(new RealTimeMeasurementObserver());
+                    loop = false;
+                }
+                catch (Exception ex)
+                {
+                    {
+                        logger.LogEntry(ex.Message, "CONNERR");
+                        Console.WriteLine("Sleeping for 2 min");
+                        logger.LogEntry("Sleeping for 2 min", "SLEEPING");
+                    }
+                    Thread.Sleep(120 * 1000);
+                }
             }
         }
     }
@@ -95,11 +104,8 @@ namespace TibberSubscription
             // Start new subscription.
             if (MainProgram.tibberRes.reconnect == "yes")
             {
-                Console.WriteLine("Sleeping for 60 sec");
-                Thread.Sleep(60 * 1000);
                 MainProgram.logger.LogEntry("Trying to reconnect", "RECONNECTING");
                 Task.Run(() => MainProgram.RunTask());
-                //Task.Run(() => MainProgram.Subscript());
                 return;
             }
             Console.WriteLine("Auto reconnect is off, change in Resources.xml\nPress any key to exit.");
