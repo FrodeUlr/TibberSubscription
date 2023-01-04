@@ -69,6 +69,7 @@ namespace TibberSubscription
                     var homeId = Guid.Parse(tibberRes.homeid);
                     var listener = await client.StartRealTimeMeasurementListener(homeId);
                     listener.Subscribe(new RealTimeMeasurementObserver());
+                    logger.LogEntry("Connected to Tibber", "STARTUP");
                     loop = false;
                 }
                 catch (Exception ex)

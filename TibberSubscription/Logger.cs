@@ -12,7 +12,7 @@ namespace TibberSubscription
         readonly static string LogFile = Directory.GetCurrentDirectory() + @"\Log\Log.txt";
         readonly static string LogPath = Directory.GetCurrentDirectory() + @"\Log";
         readonly static int MaxFiles = 3;
-        readonly static int MaxSize = 1024;
+        readonly static int MaxSize = 1024 * 1024 * 10;
 
         public Logger()
         {
