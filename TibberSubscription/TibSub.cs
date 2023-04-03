@@ -13,7 +13,7 @@ namespace TibberSubscription
     /// <summary>
     /// Remember to configure Resources.xml to your API and MQTT settings.
     /// </summary>
-    internal class MainProgram
+    internal class TibSub
     {
         public static int resets = 0;
         public static TibberResource tibberRes;
@@ -94,19 +94,19 @@ namespace TibberSubscription
         // runs is used to delay MQTT published data to be slower than tibber live subscription broadcast speed
         int runs = 0;
         // Set base MQTT topic to use
-        string mainTopic = MainProgram.tibberRes.basetopic;
+        string mainTopic = TibSub.tibberRes.basetopic;
         List<string[]> topicList = new List<string[]>();
         
         public void OnCompleted()
         {
             // Current live subscription will end.
             Console.WriteLine("Real time measurement stream has been terminated.\n");
-            MainProgram.logger.LogEntry("Real time measurement stream has been terminated", "STOPPED");
+            TibSub.logger.LogEntry("Real time measurement stream has been terminated", "STOPPED");
             // Start new subscription.
-            if (MainProgram.tibberRes.reconnect == "yes")
+            if (TibSub.tibberRes.reconnect == "yes")
             {
-                MainProgram.logger.LogEntry("Trying to reconnect", "RECONNECTING");
-                Task.Run(() => MainProgram.RunTask());
+                TibSub.logger.LogEntry("Trying to reconnect", "RECONNECTING");
+                Task.Run(() => TibSub.RunTask());
                 return;
             }
             Console.WriteLine("Auto reconnect is off, change in Resources.xml\nPress any key to exit.");
@@ -115,17 +115,17 @@ namespace TibberSubscription
         {
             // If tibber subscription is lost, add 1 to resets and goto "OnComplete"
             Console.WriteLine($"An error occurred: {error}\n");
-            MainProgram.logger.LogEntry($"An error occurred: {error}", "ERROR");
-            MainProgram.resets++;
+            TibSub.logger.LogEntry($"An error occurred: {error}", "ERROR");
+            TibSub.resets++;
         }
         public void OnNext(RealTimeMeasurement value)
         {
             topicList.Clear();
             // Get live Tibber data, map to MQTT topic configured in Resources.xml and publish enabled topics to MQTT
-            if (runs % MainProgram.tibberRes.delay == 0)
+            if (runs % TibSub.tibberRes.delay == 0)
             {
                 // Map subscription values to enabled topics defined in Resources.xml
-                foreach (var topic in MainProgram.tibberRes.topics)
+                foreach (var topic in TibSub.tibberRes.topics)
                 {
                     if(topic.Enabled == "true")
                     {
@@ -220,18 +220,18 @@ namespace TibberSubscription
                     }
                 }
                 // If no topics defined or no MQTT broker defined, no point in running.
-                if(topicList.Count == 0 || MainProgram.tibberRes.brokeraddress == null)
+                if(topicList.Count == 0 || TibSub.tibberRes.brokeraddress == null)
                 {
                     Console.Clear();
                     Console.WriteLine("No topics configured, missing MQTT broker details or error in XML. Please check Resource.xml");
                     Console.WriteLine("Subscription ended.");
                     Console.WriteLine("Press any key to exit");
-                    MainProgram.logger.LogEntry("No Topics or MQTT Broker address", "TOPICS");
+                    TibSub.logger.LogEntry("No Topics or MQTT Broker address", "TOPICS");
                     // End thread
                     throw new TaskCanceledException();
                 }
                 // Run MQTT publish task.
-                Task.Run(() => tibberMqtt.PublishMessage(topicList, lines, MainProgram.resets));
+                Task.Run(() => tibberMqtt.PublishMessage(topicList, lines, TibSub.resets));
                 lines++;
             }
             runs++;

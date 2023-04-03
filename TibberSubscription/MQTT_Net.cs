@@ -39,7 +39,7 @@ namespace TibberSubscription
                 {
                     // Setup MQTT using broker address and port from Resources.xml and connect
                     var mqttClientOptions = new MqttClientOptionsBuilder()
-                        .WithTcpServer(MainProgram.tibberRes.brokeraddress, MainProgram.tibberRes.brokerport)
+                        .WithTcpServer(TibSub.tibberRes.brokeraddress, TibSub.tibberRes.brokerport)
                         .Build();
                     await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
 
